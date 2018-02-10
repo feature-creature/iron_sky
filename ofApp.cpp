@@ -5,6 +5,7 @@ void ofApp::setup(){
 	video.setDeviceID(0);
     video.setDesiredFrameRate(60);
     video.initGrabber(320,240);
+
 }
 
 //--------------------------------------------------------------
@@ -34,8 +35,19 @@ void ofApp::update(){
         //#### FIND INTERESTING POINTS #####
 		Mat imageCV;
 		imageCV = Mat( blurred.getCvImage() );
-		goodFeaturesToTrack(imageCV, corners, 200, 0.01, 4); //param 3 is how many points you want to get
+        //param 3 is how many points you want to get
+		goodFeaturesToTrack(imageCV, corners, 200, 0.01, 4);
         
+        // empty triangulation object of previous points
+        triangulation.reset();
+        // fill triangulation object with new points
+        for(int i = 0; i < corners.size(); i++){
+            triangulation.addPoint(ofPoint(corners[i].x,corners[i].y));
+        }
+
+        //prepare points for plotting by
+        //calculate the triangulation object's triangulation
+        triangulation.triangulate();
 	}
 }
 

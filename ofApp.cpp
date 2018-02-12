@@ -7,8 +7,9 @@ void ofApp::setup(){
     //video.initGrabber(320,240);
 
     
-    ironSky.load("videos/iron_sky-paolo_nutini.mkv");
+    //ironSky.load("videos/iron_sky-paolo_nutini.mkv");
     //ironSky.load("videos/iron_sky-daniel_wolfe.mkv");
+    ironSky.load("videos/iron_sky-daniel_wolfe.mp4");
     ironSky.play();
 }
 
@@ -60,47 +61,71 @@ void ofApp::update(){
 
 //--------------------------------------------------------------
 void ofApp::draw(){
-		ofBackground(255, 255, 255);	//Set the background color
-
-		ofSetColor( 255, 255, 255 );	//Set color for images drawing
+        //black background
+		ofBackground(0);	
 
         int w = image.width;
         int h = image.height;
+
+        
+        // SUB IMAGES FOR ANALYSIS
+
+        //Set color for sub-images 
+		ofSetColor(255);	
+        
 		//Original decimated image
-		image.draw(0, 0, w/2, h/2);
+		image.draw((ofGetWidth()-w)/2, 10, w/2, h/2);
 
         //blurred immage
-		blurred.draw( w/2, 0, w/2, h/2);
+		blurred.draw(ofGetWidth()/2, 10, w/2, h/2);
 
-//		//Thresholded image
-//		mask.draw( w, 0, w/2, h/2);
-//		//Inverted image
-//		inverted.draw( w/2*3, 0, w/2, h/2);
+        //Thresholded image
+        //mask.draw( w, 0, w/2, h/2);
+        
+        //Inverted image
+        //inverted.draw( w/2*3, 0, w/2, h/2);
 
-        ofTranslate(ofGetWidth()/2-w/2, h/2+10);
-        ofSetColor(0);
+
+        // MAIN IMAGE FOR EXPERIMENTATION
+
+        // rectangle outlining main experimentation image
+        ofTranslate(ofGetWidth()/2-w/2, h/2+20);
+        ofSetColor(255);
         ofNoFill();
         ofDrawRectangle(0,0,w,h);
 
-        //draw the interesting points in RED
-        //ofSetColor(255,0,0);
-        //ofFill();
-		//for (int i=0; i<corners.size(); i++) {
-            //ofDrawEllipse(corners[i].x, corners[i].y, 5,5);
-        //}
-
-        //for(int g = 0; g < corners.size(); g++){
-            //corners[g].update();
-            //corners[g].draw();
-        //}
         
-        ofNoFill();
-        ofSetColor(0,0,0);
+        // main experimentation image
+        // iterate through stored triangles
+        for (int g=0; g<triangulation.getNumTriangles(); g++){
+            
+            // extract the vector with 3 points
+            vector <ofPoint> pts = getTriangle(g);             
 
-        for (int g=0; g<triangulation.getNumTriangles(); g++){ // loop over the triangles
-            vector <ofPoint> pts = getTriangle(g);             // extract the vector with 3 points
-            ofDrawTriangle(pts[0], pts[1], pts[2]);             // use this point to draw a triangle
+            // find center pixel of current triangle
+            int x = (pts[0][0] + pts[1][0] + pts[2][0])/3;
+            int y = (pts[0][1] + pts[1][1] + pts[2][1])/3;
+            
+            // extract color of center pixel of current triangle
+            ofColor triFill = image.getPixels().getColor(x,y);
+           
+            // draw current triangle 
+            ofPushStyle();
+            ofFill();
+            ofSetColor(triFill);
+            ofDrawTriangle(pts[0], pts[1], pts[2]);            
+            ofPopStyle();
         }
+        
+
+        //draw the 'interesting' points in RED
+        ofPushStyle();
+        ofSetColor(255,0,0);
+        ofFill();
+		for (int i=0; i<corners.size(); i++) {
+            ofDrawEllipse(corners[i].x, corners[i].y, 5,5);
+        }
+        ofPopStyle();
 }
 
 vector <ofPoint> ofApp::getTriangle(int i){

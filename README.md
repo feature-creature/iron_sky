@@ -1,5 +1,9 @@
 # Memo Akten's 'Techno Fan' Workflow
 
+## background
+
+I am starting to learn the principles of Computer Vision. I used Memo Akten's 'Techno Fan' as a guide for this first CV system. This is a reference review of his workflow.
+
 ## init
 
 Memo was tasked with creating a programmatically generated visualization process that would be mapped to previously-created video files. Memo was provided with many separate video files of individual layers of individual video shots. These separate video files were originially part of a single, large, finalized file. After Memo created the 'enhanced' video files, the original videographer re-composited the separate video files back into the single, large, finalized file to be used as a music video.

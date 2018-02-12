@@ -2,112 +2,161 @@
 
 //--------------------------------------------------------------
 void ofApp::setup(){
+
+    // declare video source
+
+    // use camera source
 	//video.setDeviceID(0);
     //video.setDesiredFrameRate(60);
     //video.initGrabber(320,240);
 
-    
-    //ironSky.load("videos/iron_sky-paolo_nutini.mkv");
-    //ironSky.load("videos/iron_sky-daniel_wolfe.mkv");
+    // use file source
     ironSky.load("videos/iron_sky-daniel_wolfe.mp4");
     ironSky.play();
 }
 
 //--------------------------------------------------------------
 void ofApp::update(){
-	//video.update();	//Decode the new frame if needed
+    
+    //Decode the new frame if needed
+    
+    //camera or file source
+	//video.update();	
     ironSky.update();
 
-	//Do computing only if the new frame was obtained
-	//if ( video.isFrameNew() ) {
+	//if a new frame was created from the video source
+    //create images and points from the new frame
 	if ( ironSky.isFrameNew() ) {
-		//Getting a new frame
+	//if ( video.isFrameNew() ) {
+        
+        //
+        // IMAGE PRE-PROCESSING FOR COMPOSITION SIMPLIFICATION + FEATURE ISOLATION
+        //
+    
+
+		//create a 'default' image from the source of the new frame
 		//image.setFromPixels( video.getPixels() );
 		image.setFromPixels( ironSky.getPixels() );
 
-		//Convert to grayscale image
+		//create a grayscale image from default image
 		grayImage = image;
 
-		//Smoothing image
+		//create a blurred image from the grayscale image
 		blurred = grayImage;
 		blurred.blurGaussian( 5 );
 
-//		//Thresholding for obtaining binary image
-//		mask = blurred;
-//		mask.threshold( ofMap(mouseX, 0, ofGetWidth(), 0, 200) );
+        //create a masking image (binary?) from the blurred image
+        //via a mouse-based vector threshold 
+        //mask = blurred;
+		//mask.threshold( ofMap(mouseX, 0, ofGetWidth(), 0, 200) );
 
-//        //Getting an inverted mask of image to use in contour finder
-//        inverted = mask;
-//        inverted.invert();
+        //create an inverted image from the masking image 
+        //useful for finding contours
+        //inverted = mask;
+        //inverted.invert();
 
-        //#### FIND INTERESTING POINTS #####
+
+        //
+        // STORE POINTS OF INTEREST FROM PRE-PROCESSED FRAME DATA
+        //
+        
+
+        //create a local mat from the blurred image
 		Mat imageCV;
 		imageCV = Mat( blurred.getCvImage() );
-        //param 3 is how many points you want to get
-		goodFeaturesToTrack(imageCV, corners, 200, 0.01, 4);
         
-        // empty triangulation object of previous points
+        //store points from the mat
+        //param 3 dictates # of points stored
+		goodFeaturesToTrack(imageCV, corners, 200, 0.01, 4);
+
+        //remove previous frame's stored points from the delaunay object
         triangulation.reset();
-        // fill triangulation object with new points
+
+        //add this frame's points of interest to the delaunay object
         for(int i = 0; i < corners.size(); i++){
             triangulation.addPoint(ofPoint(corners[i].x,corners[i].y));
         }
 
-        //prepare points for plotting by
-        //calculate the triangulation object's triangulation
+        //calculate the delaunay object's triangulation
         triangulation.triangulate();
+        // triangle data is now prepared for drawing
 	}
 }
 
 //--------------------------------------------------------------
 void ofApp::draw(){
-        //black background
+
+        // black background
 		ofBackground(0);	
 
+        //!! could be created as global variables since values are generally constant
         int w = image.width;
         int h = image.height;
 
-        
-        // SUB IMAGES FOR ANALYSIS
-
-        //Set color for sub-images 
+        //default background to white for all images that are drawn to screen 
 		ofSetColor(255);	
         
-		//Original decimated image
-		image.draw((ofGetWidth()-w)/2, 10, w/2, h/2);
+		//draw default image with border
+        ofPushMatrix();
+        ofTranslate((ofGetWidth()-(2*w))/2,10);
+        ofSetColor(255);
+        ofNoFill();
+        ofDrawRectangle(0,0,w/2,h/2);
+		image.draw(0, 0,w/2,h/2);
+        ofPopMatrix();
 
-        //blurred immage
-		blurred.draw(ofGetWidth()/2, 10, w/2, h/2);
+        //draw grayscale image with border
+        ofPushMatrix();
+        ofTranslate((ofGetWidth()-(0.5*w))/2,10);
+        ofSetColor(255);
+        ofNoFill();
+        ofDrawRectangle(0,0,w/2,h/2);
+		grayImage.draw(0,0,w/2,h/2);
+        ofPopMatrix();
 
-        //Thresholded image
+        //draw blurred image with border
+        ofPushMatrix();
+        ofTranslate((ofGetWidth()+w)/2,10);
+        ofSetColor(255);
+        ofNoFill();
+        ofDrawRectangle(0,0,w/2,h/2);
+		blurred.draw(0,0,w/2,h/2);
+        ofPopMatrix();
+
+        //draw mask thresholded image
         //mask.draw( w, 0, w/2, h/2);
         
-        //Inverted image
+        //draw inverted image
         //inverted.draw( w/2*3, 0, w/2, h/2);
 
+        
+        //
+        // VISUALIZE TRIANGLE DATA
+        //
 
-        // MAIN IMAGE FOR EXPERIMENTATION
 
-        // rectangle outlining main experimentation image
-        ofTranslate(ofGetWidth()/2-w/2, h/2+20);
+        // move triangles to ideal location
+        ofTranslate(ofGetWidth()/2-w/2, h/2+50);
+        
+        // rectangle outlining window for triangle data 
         ofSetColor(255);
         ofNoFill();
         ofDrawRectangle(0,0,w,h);
 
         
-        // main experimentation image
-        // iterate through stored triangles
+        //draw triangle data
+        //iterate through stored triangle data
         for (int g=0; g<triangulation.getNumTriangles(); g++){
             
-            // extract the vector with 3 points
+            //locally store this triangle as a vector of 3 points
             vector <ofPoint> pts = getTriangle(g);             
 
-            // find center pixel of current triangle
-            int x = (pts[0][0] + pts[1][0] + pts[2][0])/3;
-            int y = (pts[0][1] + pts[1][1] + pts[2][1])/3;
             
-            // extract color of center pixel of current triangle
-            ofColor triFill = image.getPixels().getColor(x,y);
+            //fill the entire triangle with the color of its central pixel
+            //primitive method which can reference any of the images created in update
+            int centerX = (pts[0][0] + pts[1][0] + pts[2][0])/3;
+            int centerY = (pts[0][1] + pts[1][1] + pts[2][1])/3;
+            ofColor triFill = grayImage.getPixels().getColor(centerX, centerY);
            
             // draw current triangle 
             ofPushStyle();
@@ -118,7 +167,7 @@ void ofApp::draw(){
         }
         
 
-        //draw the 'interesting' points in RED
+        //optionally draw the 'interesting' points generated for this frame
         ofPushStyle();
         ofSetColor(255,0,0);
         ofFill();
@@ -126,9 +175,14 @@ void ofApp::draw(){
             ofDrawEllipse(corners[i].x, corners[i].y, 5,5);
         }
         ofPopStyle();
+
 }
 
+
+//--------------------------------------------------------------
 vector <ofPoint> ofApp::getTriangle(int i){
+    // return a vector of points
+    
     int pA = triangulation.triangleMesh.getIndex(i*3);
     int pB = triangulation.triangleMesh.getIndex(i*3+1);
     int pC = triangulation.triangleMesh.getIndex(i*3+2);

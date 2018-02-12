@@ -12,6 +12,8 @@ public:
 	void update();
 	void draw();
 
+    vector <ofPoint> getTriangle(int i);
+
 	ofVideoGrabber video;		//Declare the video player object
 	ofxCvColorImage image;
 
@@ -23,6 +25,8 @@ public:
     ofxDelaunay triangulation;
 
     vector<Point2f> corners;
+
+    ofVideoPlayer ironSky;
 
 
 };

@@ -8,25 +8,27 @@ using namespace cv;
 class ofApp : public ofBaseApp{
 
 public:
-	void setup();
-	void update();
-	void draw();
-
+    
+    void setup();
+    void update();
+    void draw();
     vector <ofPoint> getTriangle(int i);
 
-	ofVideoGrabber video;		//Declare the video player object
-	ofxCvColorImage image;
+    //frame source
+    ofVideoGrabber video;
+    ofVideoPlayer ironSky;
 
-	ofxCvGrayscaleImage grayImage;
-	ofxCvGrayscaleImage inverted;
-	ofxCvGrayscaleImage blurred;
-	ofxCvGrayscaleImage mask;
+    //pre-processing images
+    ofxCvColorImage image;
+    ofxCvGrayscaleImage grayImage;
+    ofxCvGrayscaleImage blurred;
+    ofxCvGrayscaleImage mask;
+    ofxCvGrayscaleImage inverted;
 
     ofxDelaunay triangulation;
 
     vector<Point2f> corners;
 
-    ofVideoPlayer ironSky;
 
 
 };

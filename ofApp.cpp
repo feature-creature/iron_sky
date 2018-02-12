@@ -35,23 +35,28 @@ void ofApp::update(){
     
 
 		//create a 'default' image from the source of the new frame
+        //image type: ofxCvColorImage
 		//image.setFromPixels( video.getPixels() );
 		image.setFromPixels( ironSky.getPixels() );
 
 		//create a grayscale image from default image
+        //image type: ofxCvGrayscaleImage
 		grayImage = image;
 
 		//create a blurred image from the grayscale image
+        //image type: ofxCvGrayscaleImage
 		blurred = grayImage;
 		blurred.blurGaussian( 5 );
 
         //create a masking image (binary?) from the blurred image
         //via a mouse-based vector threshold 
+        //image type: ofxCvGrayscaleImage
         //mask = blurred;
 		//mask.threshold( ofMap(mouseX, 0, ofGetWidth(), 0, 200) );
 
         //create an inverted image from the masking image 
         //useful for finding contours
+        //image type: ofxCvGrayscaleImage
         //inverted = mask;
         //inverted.invert();
 
